@@ -62,34 +62,70 @@
 
 
 //==================================
-const listElement = document.querySelector('.posts')
-const postTemplate = document.getElementById('single-post')
+const listElement = document.querySelector('.posts');
+const postTemplate = document.getElementById('single-post');
 
-const xhr = new XMLHttpRequest()
+function sendHttpRequest(method, url, data) {
 
-xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts')
+  // const promise = new Promise((resolve, reject) => {
+  // const xhr = new XMLHttpRequest();
 
-xhr.responseType = 'json'
+  // xhr.open(method, url);
 
-xhr.onload = function () {
-  // const listOfPosts = JSON.parse(xhr.response)
-  const listOfPosts = xhr.response
-  for (const post of listOfPosts) {
-    const postEl = document.importNode(postTemplate.content, true)
-    postEl.querySelector('h2').textContent = post.title.toUpperCase()
-    postEl.querySelector('p').textContent = post.body
-    listElement.append(postEl)
+  // xhr.responseType = 'json';
 
-  }
+  // xhr.onload = function () {
+  //   resolve(xhr.response);
+  //   // const listOfPosts = JSON.parse(xhr.response);
+  // };
 
+  // xhr.send(JSON.stringify(data));
+
+  // });
+
+  // return promise;
+  return fetch(url, {
+    method: method,
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(response => {
+    if (response.status >= 200 && response.status < 300) {
+      return response.json()
+    } else {
+
+      throw new Error('something wrong -server side')
+    }
+
+  })
 }
 
-xhr.send()
+async function fetchPosts() {
+  const responseData = await sendHttpRequest(
+    'GET',
+    'https://jsonplaceholder.typicode.com/pos'
+  );
+  const listOfPosts = responseData;
+  for (const post of listOfPosts) {
+    const postEl = document.importNode(postTemplate.content, true);
+    postEl.querySelector('h2').textContent = post.title.toUpperCase();
+    postEl.querySelector('p').textContent = post.body;
+    listElement.append(postEl);
+    console.log('werwer')
+  }
+}
 
+async function createPost(title, content) {
+  const userId = Math.random();
+  const post = {
+    title: title,
+    body: content,
+    userId: userId
+  };
 
+  sendHttpRequest('POST', 'https://jsonplaceholder.typicode.com/posts', post);
+}
 
-
-
-// fetch('https://jsonplaceholder.typicode.com/todos/1')
-//   .then(response => response.json())
-//   .then(json => console.log(json))
+fetchPosts();
+createPost('DUMMY', 'A dummy post!');
